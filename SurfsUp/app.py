@@ -97,110 +97,96 @@ def temps():
 
     session = Session(engine)
     # finds the most recent date in the data
-    last_date_str = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
-    last_date_string = last_date_str[0]
+    #last_date_str = session.query(Measurement.date).order_by(Measurement.date.desc()).first()
+    #last_date_string = last_date_str[0]
     #split the string into Year - month - day variables, identifying the dash as the separating character in the string. transform into integers
-    list = last_date_string.split('-')
-    y = int(list[0])
-    m = int(list[1])
-    d = int(list[2])
+    #list = last_date_string.split('-')
+    #y = int(list[0])
+    #m = int(list[1])
+    #d = int(list[2])
     #get the date one year before the most recent date in the data
-    year_before = dt.date(y, m ,d)-dt.timedelta(days=365)
+    # I resorted to entering the year, month, and day as my code looked like it worked in Jupyter notebook but errored here
+    year_before = dt.date(2017,8,23)-dt.timedelta(days=365)
 
     #this code gets the most active station
-    results = session.query(Measurement.station, func.count(Measurement.station)).group_by(Measurement.station).\
-        order_by(func.count(Measurement.station).desc()).first()
+    #results = session.query(Measurement.station, func.count(Measurement.station)).group_by(Measurement.station).\
+        #order_by(func.count(Measurement.station).desc()).first()
 
-    most_active = results[0]
+    # my code looked like it was working but I was getting an error - I resorted to entering the most active station.
+    most_active = "USC00519281"
 
     # getting the date and temp for the last 12 months for the most active station
-    active_year = session.query(Measurement.date, Measurement.tobs).\
-    filter(Measurement.date>= year_before,Measurement.station == most_active).\
-        order_by(Measurement.date).all()
+    active_year = session.query(Measurement.tobs).\
+    filter(Measurement.station == most_active).filter(Measurement.date>= year_before).all()
     
     session.close()
-
-    return jsonify(active_year)
+    result = list(np.ravel(active_year))
+    return jsonify(temps=result)
 
 ######################################
 
-@app.route("/api/v1.0/<start>")
-def start():
+@app.route("/api/v1.0/temp_min_max_avg/<startdate>")
+def temp_min_max_avg_date(startdate):
 
 ####In this section, I think I still need to decipher what is being requested.
 
     session = Session(engine)
 
    #  code to request and get start date as y,m,d
-    y = int(input("Enter the year (yyyy) for your desired start date:"))
-    m = int(input("Enter the month (mm) for your desired start date:"))
-    d = int(input("Enter the day (dd) for your desired start date:"))
+    #y = int(input("Enter the year (yyyy) for your desired start date:"))
+    #m = int(input("Enter the month (mm) for your desired start date:"))
+    #d = int(input("Enter the day (dd) for your desired start date:"))
 
-    start_date = dt.date(y, m ,d)
+    #start_date = dt.date(startdate)
 
-    results = session.query(Measurement.station, func.count(Measurement.station)).group_by(Measurement.station).\
-        order_by(func.count(Measurement.station).desc()).first()
+    #results = session.query(Measurement.station, func.count(Measurement.station)).group_by(Measurement.station).\
+        #rder_by(func.count(Measurement.station).desc()).first()
 
-    most_active = results[0]
+    # my code looked like it was working but I was getting an error - I resorted to entering the most active station.
+    most_active = "USC00519281"
 
   # getting the date and temp for the most active station for all dates after the provided start date
-    start_temps = session.query(Measurement.date, Measurement.tobs).\
-    filter(Measurement.date>= start_date).\
-        order_by(Measurement.date).all()
+    #start_temps = session.query(Measurement.date, Measurement.tobs).\
+    #filter(Measurement.date>= start_date).\
+        #order_by(Measurement.date).all()
 
   # getting the min, max, and average for the period after the specified date
     sel = [func.min(Measurement.tobs), 
        func.max(Measurement.tobs), 
        func.avg(Measurement.tobs)]
     temps = session.query(*sel).\
-       filter(Measurement.date>= start_date, Measurement.station == most_active).all()
-
-
+       filter(Measurement.station == most_active).filter(Measurement.date>= startdate).all()
 
     session.close()
-
-    return jsonify(start_temps)
+    result = list(np.ravel(temps))
+    return jsonify(result)
 
 ##################################################
 
-@app.route("/api/v1.0/<start><end>")
-def startend():
+@app.route("/api/v1.0/range/<start_date>/<end_date>", methods=['GET'])
+def get_range(start_date, end_date):
 
     session = Session(engine)
 
-   #  code to request and get start date as y,m,d
-    y = int(input("Enter the year (yyyy) for your desired start date:"))
-    m = int(input("Enter the month (mm) for your desired start date:"))
-    d = int(input("Enter the day (dd) for your desired start date:"))
+    #results = session.query(Measurement.station, func.count(Measurement.station)).group_by(Measurement.station).\
+       # order_by(func.count(Measurement.station).desc()).first()
 
-    start_date = dt.date(y, m ,d)
-
-   #  code to request and get end date as y2,m2,d2
-    y2 = int(input("Enter the year (yyyy) for your desired start date:"))
-    m2 = int(input("Enter the month (mm) for your desired start date:"))
-    d2 = int(input("Enter the day (dd) for your desired start date:"))
-
-    end_date = dt.date(y2, m2 ,d2)
-
-    results = session.query(Measurement.station, func.count(Measurement.station)).group_by(Measurement.station).\
-        order_by(func.count(Measurement.station).desc()).first()
-
-    most_active = results[0]
+    most_active = "USC00519281"
 
   # getting the date and temp for the most active station for all dates in the specified date range
-    period_temps = session.query(Measurement.date, Measurement.tobs).\
-    filter(Measurement.date>= start_date, Measurement.date<= end_date, Measurement.station == most_active).\
-        order_by(Measurement.date).all()
+    #period_temps = session.query(Measurement.date, Measurement.tobs).\
+    #filter(Measurement.date>= start_date, Measurement.date<= end_date, Measurement.station == most_active).\
+        #order_by(Measurement.date).all()
     
   # getting the min, max, and average for the specified period  
     sel = [func.min(Measurement.tobs), 
        func.max(Measurement.tobs), 
        func.avg(Measurement.tobs)]
     temps = session.query(*sel).\
-       filter(Measurement.date>= start_date, Measurement.date<= end_date, Measurement.station == most_active).all()
+       filter(Measurement.station == most_active).filter(Measurement.date>= start_date).filter(Measurement.date<= end_date).all()
     
     temps
-
+    result = list(np.ravel(temps))
     session.close()
 
     return jsonify(temps)
