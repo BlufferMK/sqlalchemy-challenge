@@ -183,13 +183,14 @@ def get_range(start_date, end_date):
        func.max(Measurement.tobs), 
        func.avg(Measurement.tobs)]
     temps = session.query(*sel).\
-       filter(Measurement.station == most_active).filter(Measurement.date>= start_date).filter(Measurement.date<= end_date).all()
+       filter(Measurement.station == most_active).filter(Measurement.date>= start_date).\
+        filter(Measurement.date<= end_date).all()
     
-    temps
+    #temps
     result = list(np.ravel(temps))
     session.close()
 
-    return jsonify(temps)
+    return jsonify(result)
 
 
 ###########################
