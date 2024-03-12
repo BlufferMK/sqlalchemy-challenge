@@ -50,8 +50,9 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"api/v1.0/<start><br/>"
-        f"api/v1.0/<start>/<end><br/>"
+        f"/api/v1.0/start<start><br/>"
+        f"/api/v1.0/start/end/<start>/<end><br/>"
+        f"Date format is YYYYmmdd"
     )
 @app.route("/api/v1.0/precipitation")
 def precip():
@@ -125,7 +126,7 @@ def temps():
 
 ######################################
 
-@app.route("/api/v1.0/temp_min_max_avg/<startdate>")
+@app.route("/api/v1.0//start/<startdate>")
 def temp_min_max_avg_date(startdate):
 
 ####In this section, I think I still need to decipher what is being requested.
@@ -163,8 +164,8 @@ def temp_min_max_avg_date(startdate):
 
 ##################################################
 
-@app.route("/api/v1.0/range/<start_date>/<end_date>", methods=['GET'])
-def get_range(start_date, end_date):
+@app.route("/api/v1.0/start/end/<start>/<end>")
+def min_max_avg(start, end):
 
     session = Session(engine)
 
@@ -183,8 +184,8 @@ def get_range(start_date, end_date):
        func.max(Measurement.tobs), 
        func.avg(Measurement.tobs)]
     temps = session.query(*sel).\
-       filter(Measurement.station == most_active).filter(Measurement.date>= start_date).\
-        filter(Measurement.date<= end_date).all()
+       filter(Measurement.station == most_active).filter(Measurement.date>= start).\
+        filter(Measurement.date<= end).all()
     
     #temps
     result = list(np.ravel(temps))
